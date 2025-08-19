@@ -26,11 +26,74 @@
   </div>
 
 <script>
-  const addItems = document.querySelector('.add-items');
-  const itemsList = document.querySelector('.plates');
-  const items = [];
+  const addItems = document.querySelector('.add-items'); // Form to add items
+  const itemsList = document.querySelector('.plates'); // The plates (list) container
+  let items = JSON.parse(localStorage.getItem('plates')) || []; // Load items from localStorage or initialize as empty
 
+  // Function to render the plates/items list
+  function renderItems() {
+    itemsList.innerHTML = ''; // Clear the current list
+    if (items.length === 0) {
+      itemsList.innerHTML = '<li>No plates added yet!</li>';
+    } else {
+      // Render the items
+      items.forEach((plate, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <input type="checkbox" data-index="${index}" id="item${index}" ${plate.done ? 'checked' : ''} />
+          <label for="item${index}">${plate.name}</label>
+        `;
+        itemsList.appendChild(li);
+      });
+    }
+  }
+
+  // Function to handle adding a new item
+  function addItem(e) {
+    e.preventDefault(); // Prevent form submission from refreshing the page
+    const itemInput = addItems.querySelector('input[name="item"]'); // Get the item input field
+    const newItem = itemInput.value.trim();
+
+    if (newItem) {
+      // Add the item to the items array
+      const plate = {
+        name: newItem,
+        done: false
+      };
+      items.push(plate);
+
+      // Save items to localStorage
+      localStorage.setItem('plates', JSON.stringify(items));
+
+      // Clear the input field
+      itemInput.value = '';
+
+      // Re-render the list
+      renderItems();
+    }
+  }
+
+  // Function to handle changing the 'done' status of an item
+  function toggleDone(e) {
+    if (!e.target.matches('input[type="checkbox"]')) return; // Only respond to checkbox changes
+    const index = e.target.dataset.index; // Get the index of the item
+    items[index].done = !items[index].done; // Toggle the done status
+
+    // Save updated items to localStorage
+    localStorage.setItem('plates', JSON.stringify(items));
+
+    // Re-render the list
+    renderItems();
+  }
+
+  // Event listeners
+  addItems.addEventListener('submit', addItem); // Handle form submit
+  itemsList.addEventListener('click', toggleDone); // Handle checkbox change
+
+  // Initial render when the page loads
+  renderItems();
 </script>
+
 
 
 </body>
